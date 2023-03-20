@@ -1,11 +1,23 @@
 using BTL.Data;
+using Domain.SiteSetting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .Build();
+
+
+var appSettings = new SiteSettingModel();
+configuration.Bind(appSettings);
+builder.Services.Configure<SiteSettingModel>(configuration);
+    
 //
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = appSettings.ConnectionStrings.DefaultConnection
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));

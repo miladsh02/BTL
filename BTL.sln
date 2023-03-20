@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTL", "BTL\BTL.csproj", "{C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository", "Repository\Repository.csproj", "{39BA0FB5-5B4B-49C0-9DD9-8EF092FA42F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{A4F48B67-B19E-4D05-AE16-D86D8AE9CBB0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{39BA0FB5-5B4B-49C0-9DD9-8EF092FA42F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39BA0FB5-5B4B-49C0-9DD9-8EF092FA42F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39BA0FB5-5B4B-49C0-9DD9-8EF092FA42F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4F48B67-B19E-4D05-AE16-D86D8AE9CBB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4F48B67-B19E-4D05-AE16-D86D8AE9CBB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4F48B67-B19E-4D05-AE16-D86D8AE9CBB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4F48B67-B19E-4D05-AE16-D86D8AE9CBB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

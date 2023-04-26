@@ -1,19 +1,39 @@
 using BTL.Data;
+using Data.Entity;
+using Domain.SiteSetting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-//
+
+var Configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json",optional:true,reloadOnChange:true)
+    .Build();
+
+var siteSetting = new SiteSettingModel();
+Configuration.Bind(siteSetting);
+builder.Services.Configure<SiteSettingModel>(Configuration);
+
+
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = siteSetting.ConnectionStrings.DefaultConnection
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+//builder.Services.AddIdentity<CustomIdentityUserModel, IdentityRole>()
+//    .AddEntityFrameworkStores<ApplicationDbContext>()
+//    .AddDefaultTokenProviders();
+
+builder.Services.AddIdentity<CustomIdentityUserModel, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+builder.Services.AddScoped<UserManager<CustomIdentityUserModel>>();
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 

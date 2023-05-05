@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230426174844_init")]
+    [Migration("20230502071144_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -38,17 +38,29 @@ namespace Data.Migrations
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ProductModelId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("RemovedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid?>("StudentModelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductModelId");
+
+                    b.HasIndex("StudentModelId");
 
                     b.ToTable("Carts", "CstUserMngt");
                 });
@@ -186,27 +198,34 @@ namespace Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("Id");
-
-                    b.ToTable("Order", "CstUserMngt");
-                });
-
-            modelBuilder.Entity("Data.Entity.StudentOrderModel", b =>
-                {
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTime>("DeliveryDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("CustomerId", "OrderId");
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasIndex("OrderId");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
-                    b.ToTable("StudentOrders", "CstUserMngt");
+                    b.Property<DateTime>("RemovedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("StudentModelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("StudentModelId");
+
+                    b.ToTable("Order", "CstUserMngt");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -342,6 +361,17 @@ namespace Data.Migrations
                     b.ToTable("UserTokens", "CstUserMngt");
                 });
 
+            modelBuilder.Entity("BTL.Models.CartModel", b =>
+                {
+                    b.HasOne("BTL.Models.ProductModel", null)
+                        .WithMany("Carts")
+                        .HasForeignKey("ProductModelId");
+
+                    b.HasOne("BTL.Models.StudentModel", null)
+                        .WithMany("Carts")
+                        .HasForeignKey("StudentModelId");
+                });
+
             modelBuilder.Entity("BTL.Models.StudentModel", b =>
                 {
                     b.HasOne("Data.Entity.CustomIdentityUserModel", "CustomIdentityUserModel")
@@ -353,23 +383,19 @@ namespace Data.Migrations
                     b.Navigation("CustomIdentityUserModel");
                 });
 
-            modelBuilder.Entity("Data.Entity.StudentOrderModel", b =>
+            modelBuilder.Entity("Data.Entity.OrderModel", b =>
                 {
-                    b.HasOne("BTL.Models.StudentModel", "Customer")
+                    b.HasOne("BTL.Models.ProductModel", "Product")
+                        .WithMany("Order")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BTL.Models.StudentModel", null)
                         .WithMany("Orders")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("StudentModelId");
 
-                    b.HasOne("Data.Entity.OrderModel", "Order")
-                        .WithMany("students")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Order");
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -423,8 +449,17 @@ namespace Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("BTL.Models.ProductModel", b =>
+                {
+                    b.Navigation("Carts");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("BTL.Models.StudentModel", b =>
                 {
+                    b.Navigation("Carts");
+
                     b.Navigation("Orders");
                 });
 
@@ -432,11 +467,6 @@ namespace Data.Migrations
                 {
                     b.Navigation("Student")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Data.Entity.OrderModel", b =>
-                {
-                    b.Navigation("students");
                 });
 #pragma warning restore 612, 618
         }

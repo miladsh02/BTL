@@ -18,7 +18,6 @@ namespace BTL.Data
         public DbSet<ProductModel> Products { get; set; }
         public DbSet<StudentModel> Students { get; set; }
         public DbSet<OrderModel> Order { get; set; }
-        public DbSet<StudentOrderModel> StudentOrders { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -63,20 +62,6 @@ namespace BTL.Data
                 .HasOne(a => a.Student)
                 .WithOne(a => a.CustomIdentityUserModel)
                 .HasForeignKey<StudentModel>(c => c.UserId);
-
-
-            builder.Entity<StudentOrderModel>()
-                .HasKey(so => new { so.CustomerId, so.OrderId }); // configure composite primary key
-
-            builder.Entity<StudentOrderModel>()
-                .HasOne(so => so.Customer)
-                .WithMany(s => s.Orders)
-                .HasForeignKey(so => so.CustomerId); // configure foreign key to StudentModel
-
-            builder.Entity<StudentOrderModel>()
-                .HasOne(so => so.Order)
-                .WithMany(o => o.students)
-                .HasForeignKey(so => so.OrderId); // configure foreign key to OrderModel
 
         }
     }

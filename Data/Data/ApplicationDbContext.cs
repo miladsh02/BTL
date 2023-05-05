@@ -16,6 +16,7 @@ namespace BTL.Data
 
         public DbSet<CartModel> Carts { get; set; }
         public DbSet<ProductModel> Products { get; set; }
+        public DbSet<ProductTemplateModel> ProductsTemplate { get; set; }
         public DbSet<StudentModel> Students { get; set; }
         public DbSet<OrderModel> Order { get; set; }
 

@@ -4,6 +4,7 @@ using BTL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230505084433_addedProductTemplateModelEntityAndAddedRelationToProductModel")]
+    partial class addedProductTemplateModelEntityAndAddedRelationToProductModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,10 +77,7 @@ namespace Data.Migrations
                     b.Property<float>("Price")
                         .HasColumnType("real");
 
-                    b.Property<Guid>("ProductTemplateId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ProductTemplateModelId")
+                    b.Property<Guid?>("ProductTemplateId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
@@ -85,7 +85,7 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductTemplateModelId");
+                    b.HasIndex("ProductTemplateId");
 
                     b.ToTable("Products", "CstUserMngt");
                 });
@@ -393,9 +393,11 @@ namespace Data.Migrations
 
             modelBuilder.Entity("BTL.Models.ProductModel", b =>
                 {
-                    b.HasOne("Data.Entity.ProductTemplateModel", null)
+                    b.HasOne("Data.Entity.ProductTemplateModel", "ProductTemplate")
                         .WithMany("Product")
-                        .HasForeignKey("ProductTemplateModelId");
+                        .HasForeignKey("ProductTemplateId");
+
+                    b.Navigation("ProductTemplate");
                 });
 
             modelBuilder.Entity("BTL.Models.StudentModel", b =>

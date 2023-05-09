@@ -9,7 +9,7 @@ namespace BTL.Models
         public Guid Id { get; set; }
         public Guid ProductId { get; set; }
         public Guid StudentId { get; set; }
-        public CartStatus status { get; set; }
+        public CartStatus Status { get; set; }
         public int Quantity { get; set; }
         public DateTime CreatedDate { get; set;}
         public DateTime RemovedDate { get; set;}

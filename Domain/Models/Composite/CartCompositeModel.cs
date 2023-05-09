@@ -9,7 +9,7 @@ namespace Domain.Models.Composite
 {
     public class CartCompositeModel
     {
-        //public CartModel cart { get; set; }
+        public CartModel cart { get; set; }
 
     }
 }

@@ -100,9 +100,9 @@ namespace BTL.Controllers
                         ProductPrice = p.Price,
                         Status = c.Status
                     }).ToListAsync();
-            if()
 
 
+            //if()
 
             return View();
         }

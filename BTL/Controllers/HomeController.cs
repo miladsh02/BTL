@@ -6,12 +6,15 @@ using BTL.Enums;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
+using System.Security.Cryptography.Xml;
 using Domain.DtoModels;
+using Domain.Enums;
 using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using LoginModel = BTL.Areas.Identity.Pages.Account.LoginModel;
+using Domain.Models.Composite;
 
 namespace BTL.Controllers
 {
@@ -29,6 +32,7 @@ namespace BTL.Controllers
                         Url.RouteUrl(new { area = "Identity", page = "/Account/Login" }):
                         nameof(HomeController.CustomError);
         }
+
         //[Authorize(Roles = "Admin,developer")]
         public async Task<IActionResult> Index()
         {
@@ -44,7 +48,8 @@ namespace BTL.Controllers
 
             return View(results);
         }
-        public async Task<IActionResult> AddToCart(List<ProductModel> products)
+        
+        public async Task<IActionResult> AddToCart(List<ProductDto> products)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId.IsNullOrEmpty())
@@ -59,54 +64,148 @@ namespace BTL.Controllers
                 return Redirect(loginUrl!);
             }
 
+            var cartList = new List<CartModel>();
+
             foreach (var product in products)
             {
-                var cart = new CartModel()
+                cartList.Add(new CartModel()
                 {
                     CreatedDate = DateTime.Now,
                     Id = new Guid(),
-                    ProductId = product.Id,
+                    ProductId = product.ProductId,
                     Quantity = 1,
-                    StudentId = product.Id,
+                    StudentId = student.Id,
                     Status = CartStatus.Available
-                };
-                await _context.Carts.AddAsync(cart);
+                });
                 
             }
 
+            await _context.Carts.AddRangeAsync(cartList);
             await _context.SaveChangesAsync();
-            return Redirect("~/Index");
+
+            return RedirectToAction(nameof(HomeController.Cart));
         }
 
         public async Task<IActionResult> Cart()
         {
+            #region Validate User
+
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId.IsNullOrEmpty())
             {
                 return Redirect(_loginUrl!);
             }
+            
+            #endregion
 
-            List<CartDtoModel> results =
+            #region get user cart data from DB
+            
+            List<CartCompositeModel> results =
                 await (from s in _context.Students
                     join c in _context.Carts on s.Id equals c.StudentId
                     join p in _context.Products on c.ProductId equals p.Id
                     join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
                     where (c.Status == CartStatus.Available) || (c.Status == CartStatus.Unavailable)
-                    select new CartDtoModel()
+                    select new CartCompositeModel()
                     {
-                        CartId = c.Id,
-                        ProductName = pt.Name,
-                        Quantity = c.Quantity,
-                        ProductPrice = p.Price,
-                        Status = c.Status
+                        Cart = c,
+                        Product = p,
+                        ProductTemplate=pt
                     }).ToListAsync();
+            
+            #endregion
 
+            #region update the cart data
+            
+            foreach (var result in results)
+            {
+                #region update status
+                //change Unavailable to RemovedFromCart
+                if (result.Cart.Status == CartStatus.Unavailable)
+                {
+                    result.Cart.Status = CartStatus.RemovedFromCart;
+                    _context.Update(result);
+                }
+                //change ChangedTheValue to Available
+                else if (result.Cart.Status == CartStatus.ChangedTheValue)
+                {
+                    result.Cart.Status = CartStatus.Available;
+                    _context.Update(result);
+                }
+                #endregion 
 
-            //if()
+                //find object
+                var dbSearch =
+                    await _context.Products.FirstOrDefaultAsync(x => x.Id == result.Product.Id);
 
-            return View();
+                //change status to Unavailable
+                if (dbSearch == null)
+                {
+                    result.Cart.Status = CartStatus.Unavailable;
+                    _context.Update(result);
+                }
+
+                //update value
+                else if (result.Cart.Quantity > dbSearch.Quantity)
+                {
+                    result.Cart.Quantity = dbSearch.Quantity;
+                    result.Cart.Status = CartStatus.ChangedTheValue;
+                }
+
+            }
+            
+            await _context.SaveChangesAsync();
+
+            #endregion
+
+            #region mapping data
+
+            //map data to dto model
+            var dtoObject = new List<CartDtoModel>();
+            foreach (var result in results)
+            {
+                dtoObject.Add(new CartDtoModel()
+                {
+                    CartId = result.Cart.Id,
+                    ProductName = result.ProductTemplate.Name,
+                    ProductPrice = result.Product.Price,
+                    Quantity = result.Cart.Quantity,
+                    Status = result.Cart.Status
+
+                });
+            }
+
+            #endregion
+
+            return View(dtoObject);
         }
 
+        public async Task<IActionResult> Orders()
+        {
+            var results = await (from o in _context.Order
+                join p in _context.Products on o.ProductId equals p.Id
+                join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
+                join s in _context.Students on o.StudentId equals s.Id
+                where (o.DeliveryDate >= DateTime.Today )&&
+                      (o.DeliveryDate <= DateTime.Today.AddDays(1))&&
+                      (o.Status==OrderStatus.InProcess)
+                select new OrderDtoModel()
+                {
+                    OrderId = o.Id,
+                    Price = p.Price,
+                    OrderDeliveryDate = o.DeliveryDate,
+                    ProductName = pt.Name,
+                    OrderQuantity = o.Quantity,
+                    OrderStatus = o.Status,
+                    StudentFirstName = s.FirstName,
+                    StudentLastName = s.LastName,
+                    StudentPhoneNumber =s.PhoneNumber,
+                    StudentUniversityId = s.UniversityId
+                }).ToListAsync();
+
+            return View(results);
+        }
+        
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

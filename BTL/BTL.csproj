@@ -40,6 +40,11 @@
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Views\Home\Cart.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Home\Orders.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\Home\Orders.cshtml" />
   </ItemGroup>
 
 </Project>

@@ -34,7 +34,9 @@ namespace BTL.Controllers
                         Url.RouteUrl(new { area = "Identity", page = "/Account/Login" }):
                         nameof(HomeController.CustomError);
         }
-
+        
+        
+        //ok
         //[Authorize(Roles = "Admin,developer")]
         public async Task<IActionResult> Index()
         {
@@ -51,6 +53,7 @@ namespace BTL.Controllers
             return View(results);
         }
         
+        //ok
         public async Task<IActionResult> AddToCart(List<ProductDto> products)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -87,7 +90,7 @@ namespace BTL.Controllers
 
             return RedirectToAction(nameof(HomeController.Cart));
         }
-
+        //ok
         public async Task<IActionResult> Transaction()
         {
 
@@ -109,7 +112,7 @@ namespace BTL.Controllers
                     join c in _context.Carts on s.Id equals c.StudentId
                     join p in _context.Products on c.ProductId equals p.Id
                     join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
-                    where (c.Status == CartStatus.Available) || s.UserId==userId
+                    where (c.Status == CartStatus.Available) && s.UserId==userId
                     select new CartCompositeModel()
                     {
                         Cart = c,
@@ -149,12 +152,14 @@ namespace BTL.Controllers
                 CreateDate = DateTime.Now,
                 Id = new Guid(),
                 Status = StudentTransactionStatus.WhileTransaction,
+                StudentId = studentId,
                 Price = price
             });
             await _context.SaveChangesAsync();
             return View();
         }
 
+        //not ok
         public async Task<IActionResult> AddToOrder(bool transactionResult)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -208,6 +213,7 @@ namespace BTL.Controllers
             return RedirectToAction();
         }
 
+        //ok
         public async Task<IActionResult> Cart()
         {
             #region Validate User
@@ -302,6 +308,7 @@ namespace BTL.Controllers
             return View(dtoObject);
         }
 
+        //not ok
         public async Task<IActionResult> Orders()
         {
             var results = await (from o in _context.Order
@@ -328,6 +335,17 @@ namespace BTL.Controllers
             return View(results);
         }
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

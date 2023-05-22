@@ -327,7 +327,7 @@ namespace BTL.Controllers
 
             return View(results);
         }
-        
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -340,8 +340,4 @@ namespace BTL.Controllers
         }
     }
 
-    public class AddToOrderDto
-    {
-        tra
-    }
 }

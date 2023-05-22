@@ -36,7 +36,6 @@ namespace BTL.Controllers
         }
         
         
-        //ok
         //[Authorize(Roles = "Admin,developer")]
         public async Task<IActionResult> Index()
         {
@@ -53,9 +52,10 @@ namespace BTL.Controllers
             return View(results);
         }
         
-        //ok
         public async Task<IActionResult> AddToCart(List<ProductDto> products)
         {
+            #region Get User Data
+
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId.IsNullOrEmpty())
             {
@@ -68,6 +68,10 @@ namespace BTL.Controllers
                 var loginUrl = Url.RouteUrl(new { area = "Identity", page = "/Account/Login" });
                 return Redirect(loginUrl!);
             }
+
+            #endregion
+
+            #region Add products to cart
 
             var cartList = new List<CartModel>();
 
@@ -85,15 +89,16 @@ namespace BTL.Controllers
                 
             }
 
+            #endregion
+            
             await _context.Carts.AddRangeAsync(cartList);
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(HomeController.Cart));
         }
-        //ok
         public async Task<IActionResult> Transaction()
         {
-
+            #region check user
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId.IsNullOrEmpty())
             {
@@ -106,7 +111,9 @@ namespace BTL.Controllers
                  where s.UserId == userId
                  select s.Id
                  ).FirstOrDefaultAsync();
+            #endregion
 
+            #region GetUsersCartData
             List<CartCompositeModel> results =
                 await (from s in _context.Students
                     join c in _context.Carts on s.Id equals c.StudentId
@@ -122,7 +129,9 @@ namespace BTL.Controllers
             
             if (results.IsNullOrEmpty())
                 return RedirectToAction(nameof(HomeController.Cart));
+            #endregion
 
+            #region Transport Cart Data to order and make a transaction
             var price = new float();
             foreach (var cartItem in results)
             {
@@ -155,13 +164,16 @@ namespace BTL.Controllers
                 StudentId = studentId,
                 Price = price
             });
+            #endregion
+            
             await _context.SaveChangesAsync();
             return View();
         }
 
-        //not ok
         public async Task<IActionResult> AddToOrder(bool transactionResult)
         {
+            #region Get user data
+
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId.IsNullOrEmpty())
             {
@@ -175,6 +187,9 @@ namespace BTL.Controllers
                 select s.Id
             ).FirstOrDefaultAsync();
 
+            #endregion
+            
+            
             if (transactionResult is true)
             {
                 var resultList = await _context.Order
@@ -213,7 +228,6 @@ namespace BTL.Controllers
             return RedirectToAction();
         }
 
-        //ok
         public async Task<IActionResult> Cart()
         {
             #region Validate User
@@ -308,7 +322,6 @@ namespace BTL.Controllers
             return View(dtoObject);
         }
 
-        //not ok
         public async Task<IActionResult> Orders()
         {
             var results = await (from o in _context.Order
@@ -334,17 +347,6 @@ namespace BTL.Controllers
 
             return View(results);
         }
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

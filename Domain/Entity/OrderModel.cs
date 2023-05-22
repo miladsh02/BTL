@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BTL.Models;
 using Domain.Enums;
+using Domain.Entity;
 
 namespace Data.Entity
 {
@@ -23,6 +24,8 @@ namespace Data.Entity
         public Guid StudentId { get; set; } 
         public Guid ProductId { get; set; }
         public ProductModel? Product { get; set; }
+        public ICollection<TransactionModel>? Transaction { get; set; }
+
 
 
 

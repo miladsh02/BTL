@@ -10,6 +10,8 @@ namespace Domain.Enums
     {
         InProcess = 0,
         Delivered = 1,
-        Cancelled = 2
+        Cancelled = 2,
+        InTransaction=3,
+        TransactionFailed=4
     }
 }

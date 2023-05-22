@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using BTL.Enums;
+using Data.Entity;
+using Domain.Entity;
 
 namespace BTL.Models
 {

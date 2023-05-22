@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
+using Domain.Entity;
 
 namespace BTL.Data
 {
@@ -19,6 +20,7 @@ namespace BTL.Data
         public DbSet<ProductTemplateModel> ProductsTemplate { get; set; }
         public DbSet<StudentModel> Students { get; set; }
         public DbSet<OrderModel> Order { get; set; }
+        public DbSet<TransactionModel> Transaction { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)

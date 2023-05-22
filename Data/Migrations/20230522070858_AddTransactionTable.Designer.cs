@@ -4,6 +4,7 @@ using BTL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230522070858_AddTransactionTable")]
+    partial class AddTransactionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -253,11 +256,11 @@ namespace Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("CartId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<float>("Price")
                         .HasColumnType("real");
@@ -269,10 +272,6 @@ namespace Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("StudentId");
 
                     b.ToTable("Transaction", "CstUserMngt");
                 });
@@ -454,25 +453,6 @@ namespace Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Domain.Entity.TransactionModel", b =>
-                {
-                    b.HasOne("Data.Entity.OrderModel", "Order")
-                        .WithMany("Transaction")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BTL.Models.StudentModel", "Student")
-                        .WithMany("Transactions")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -536,19 +516,12 @@ namespace Data.Migrations
                     b.Navigation("Carts");
 
                     b.Navigation("Orders");
-
-                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("Data.Entity.CustomIdentityUserModel", b =>
                 {
                     b.Navigation("Student")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Data.Entity.OrderModel", b =>
-                {
-                    b.Navigation("Transaction");
                 });
 
             modelBuilder.Entity("Data.Entity.ProductTemplateModel", b =>

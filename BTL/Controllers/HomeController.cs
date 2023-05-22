@@ -7,7 +7,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using System.Security.Cryptography.Xml;
+using Data.Entity;
 using Domain.DtoModels;
+using Domain.Entity;
 using Domain.Enums;
 using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
@@ -84,6 +86,126 @@ namespace BTL.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(HomeController.Cart));
+        }
+
+        public async Task<IActionResult> Transaction()
+        {
+
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId.IsNullOrEmpty())
+            {
+                return Redirect(_loginUrl!);
+            }
+
+            var studentId = await 
+                (
+                 from s in _context.Students
+                 where s.UserId == userId
+                 select s.Id
+                 ).FirstOrDefaultAsync();
+
+            List<CartCompositeModel> results =
+                await (from s in _context.Students
+                    join c in _context.Carts on s.Id equals c.StudentId
+                    join p in _context.Products on c.ProductId equals p.Id
+                    join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
+                    where (c.Status == CartStatus.Available) || s.UserId==userId
+                    select new CartCompositeModel()
+                    {
+                        Cart = c,
+                        Product = p,
+                        ProductTemplate = pt
+                    }).ToListAsync();
+            
+            if (results.IsNullOrEmpty())
+                return RedirectToAction(nameof(HomeController.Cart));
+
+            var price = new float();
+            foreach (var cartItem in results)
+            {
+                var product =
+                    await _context.Products.FirstOrDefaultAsync(x => x.Id == cartItem.Product.Id);
+
+                await _context.Order.AddAsync(new OrderModel()
+                {
+                    CreatedDate = DateTime.Now,
+                    DeliveryDate = product.OrderDate,
+                    Id = new Guid(),
+                    ProductId = product.Id,
+                    Quantity = cartItem.Cart.Quantity,
+                    Status = OrderStatus.InTransaction,
+                    StudentId = studentId
+                });
+
+                var productQuantity= product.Quantity;
+                var cartQuantity= cartItem.Product.Quantity;
+                product.Quantity = productQuantity - cartQuantity;
+                _context.Update(product);
+                price += cartItem.Product.Price * cartItem.Cart.Quantity;
+            }
+
+            await _context.Transaction.AddAsync(new TransactionModel()
+            {
+                CreateDate = DateTime.Now,
+                Id = new Guid(),
+                Status = StudentTransactionStatus.WhileTransaction,
+                Price = price
+            });
+            await _context.SaveChangesAsync();
+            return View();
+        }
+
+        public async Task<IActionResult> AddToOrder(bool transactionResult)
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId.IsNullOrEmpty())
+            {
+                return Redirect(_loginUrl!);
+            }
+
+            var studentId = await
+            (
+                from s in _context.Students
+                where s.UserId == userId
+                select s.Id
+            ).FirstOrDefaultAsync();
+
+            if (transactionResult is true)
+            {
+                var resultList = await _context.Order
+                    .Where(o => o.StudentId == studentId && o.Status == OrderStatus.InTransaction)
+                    .ToListAsync();
+                foreach (var result in resultList)
+                {
+                    result.Status = OrderStatus.InProcess;
+                }
+                _context.UpdateRange(resultList);
+            }
+
+            if (transactionResult is false)
+            {
+                var resultList = await _context.Order
+                    .Where(o => o.StudentId == studentId && o.Status == OrderStatus.InTransaction)
+                    .ToListAsync();
+                foreach (var result in resultList)
+                {
+                    result.Status = OrderStatus.TransactionFailed;
+                    
+                }
+
+                foreach (var result in resultList)
+                {
+                    var updatedProduct =
+                        await _context.Products.FirstOrDefaultAsync(x=>x.Id==result.ProductId);
+                    updatedProduct!.Quantity += result.Quantity;
+                    _context.Update(updatedProduct);
+                }
+
+                _context.UpdateRange(resultList);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction();
         }
 
         public async Task<IActionResult> Cart()
@@ -216,5 +338,10 @@ namespace BTL.Controllers
         {
             return View();
         }
+    }
+
+    public class AddToOrderDto
+    {
+        tra
     }
 }

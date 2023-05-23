@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.DtoModels
 {
-    public class UsersRoleDtp
+    public class UserRoleDto
     {
         public string UserId { get; set; }
         public string RoleName { get; set; } = null!;
@@ -15,4 +15,5 @@ namespace Domain.DtoModels
         public string UniversityId { get; set; } = null!;
         public string NationalCode { get; set; } = null!;
     }
+
 }

@@ -1,4 +1,4 @@
-﻿@model System.Collections.Generic.List<Domain.DtoModels.ProductDto>
+﻿@model List<Domain.DtoModels.ProductDto>
 
 @{
     ViewBag.Title = "title";
@@ -6,3 +6,18 @@
 }
 
 <h2>title</h2>
+
+@foreach (var product in Model)
+{
+    <div>
+        <h4>@product.ProductTemplateName</h4>
+        <p>@product.ProductTemplateDescription</p>
+        <p>Price: @product.ProductPrice</p>
+        <p>Quantity: @product.ProductQuantity</p>
+        <p>Order Date: @product.ProductOrderDate</p>
+        <form asp-action="AddToCart" method="post">
+            <input type="hidden" name="products.Index" value="@product.ProductId" />
+            <input type="submit" value="Add to Cart" />
+        </form>
+    </div>
+}

@@ -11,6 +11,8 @@ namespace BTL.Models
         public int Quantity { get; set; }
         public DateTime OrderDate { get; set; }
         public Guid ProductTemplateId { get; set; }
+        public ProductTemplateModel? ProductTemplate { get; set; }
+
         public ICollection<OrderModel>? Order { get; set; }
         public ICollection<CartModel> Carts { get; } = new List<CartModel>();
 

@@ -1,4 +1,5 @@
 ﻿using BTL.Models;
+using Domain.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Data.Entity
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
-        public ICollection<ProductModel>? Product{ get; set; }
+        public ICollection<ProductModel> Products { get; } = new List<ProductModel>();
 
     }
 }

@@ -2,6 +2,7 @@ using BTL.Data;
 using Data.Entity;
 using Domain.SiteSetting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,13 +24,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-//builder.Services.AddIdentity<CustomIdentityUserModel, IdentityRole>()
-//    .AddEntityFrameworkStores<ApplicationDbContext>()
-//    .AddDefaultTokenProviders();
-
 builder.Services.AddIdentity<CustomIdentityUserModel, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddDefaultUI();
+
 builder.Services.AddScoped<UserManager<CustomIdentityUserModel>>();
 
 builder.Services.AddControllersWithViews();

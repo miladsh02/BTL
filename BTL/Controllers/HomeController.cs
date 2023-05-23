@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using LoginModel = BTL.Areas.Identity.Pages.Account.LoginModel;
 using Domain.Models.Composite;
+using System.Security.Principal;
 
 namespace BTL.Controllers
 {
@@ -30,24 +31,30 @@ namespace BTL.Controllers
         {
             _logger = logger;
             _context = context;
-            _loginUrl = Url.RouteUrl(new { area = "Identity", page = "/Account/Login" }).IsNullOrEmpty()?
-                        Url.RouteUrl(new { area = "Identity", page = "/Account/Login" }):
-                        nameof(HomeController.CustomError);
+            _loginUrl = "Identity/Account/Login";
         }
         
         
         //[Authorize(Roles = "Admin,developer")]
         public async Task<IActionResult> Index()
         {
-            var results =await (from p in _context.Products
-                                join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
-                                where p.OrderDate >= DateTime.Today&& p.OrderDate <= DateTime.Today.AddDays(1)
-                                select new ProductDto 
-                                {
-                                 ProductId = p.Id,ProductTemplateName = pt.Name,
-                                 ProductTemplateDescription = pt.Description,ProductPrice = p.Price,
-                                 ProductQuantity = p.Quantity,ProductOrderDate = p.OrderDate
-                                }).ToListAsync();
+            return View();
+        }
+
+        public async Task<IActionResult> Products()
+        {
+            var results = await (from p in _context.Products
+                join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
+                where p.OrderDate >= DateTime.Today && p.OrderDate <= DateTime.Today.AddDays(1)
+                select new ProductDto
+                {
+                    ProductId = p.Id,
+                    ProductTemplateName = pt.Name,
+                    ProductTemplateDescription = pt.Description,
+                    ProductPrice = p.Price,
+                    ProductQuantity = p.Quantity,
+                    ProductOrderDate = p.OrderDate
+                }).ToListAsync();
 
             return View(results);
         }

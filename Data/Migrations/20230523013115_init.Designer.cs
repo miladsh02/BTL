@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230522071351_addTransactionRelations")]
-    partial class addTransactionRelations
+    [Migration("20230523013115_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -106,6 +106,10 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NationalCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
@@ -256,11 +260,11 @@ namespace Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CartId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<float>("Price")
                         .HasColumnType("real");
@@ -273,7 +277,7 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CartId");
+                    b.HasIndex("OrderId");
 
                     b.HasIndex("StudentId");
 
@@ -459,9 +463,9 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Entity.TransactionModel", b =>
                 {
-                    b.HasOne("BTL.Models.CartModel", "Cart")
+                    b.HasOne("Data.Entity.OrderModel", "Order")
                         .WithMany("Transaction")
-                        .HasForeignKey("CartId")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -471,7 +475,7 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Cart");
+                    b.Navigation("Order");
 
                     b.Navigation("Student");
                 });
@@ -527,11 +531,6 @@ namespace Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("BTL.Models.CartModel", b =>
-                {
-                    b.Navigation("Transaction");
-                });
-
             modelBuilder.Entity("BTL.Models.ProductModel", b =>
                 {
                     b.Navigation("Carts");
@@ -552,6 +551,11 @@ namespace Data.Migrations
                 {
                     b.Navigation("Student")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Data.Entity.OrderModel", b =>
+                {
+                    b.Navigation("Transaction");
                 });
 
             modelBuilder.Entity("Data.Entity.ProductTemplateModel", b =>

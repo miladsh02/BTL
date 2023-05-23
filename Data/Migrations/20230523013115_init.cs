@@ -15,19 +15,17 @@ namespace Data.Migrations
                 name: "CstUserMngt");
 
             migrationBuilder.CreateTable(
-                name: "Products",
+                name: "ProductsTemplate",
                 schema: "CstUserMngt",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<float>(type: "real", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.PrimaryKey("PK_ProductsTemplate", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -72,6 +70,29 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Products",
+                schema: "CstUserMngt",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Price = table.Column<float>(type: "real", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ProductTemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProductTemplateModelId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Products_ProductsTemplate_ProductTemplateModelId",
+                        column: x => x.ProductTemplateModelId,
+                        principalSchema: "CstUserMngt",
+                        principalTable: "ProductsTemplate",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RoleClaims",
                 schema: "CstUserMngt",
                 columns: table => new
@@ -101,6 +122,7 @@ namespace Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UniversityId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NationalCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -221,7 +243,7 @@ namespace Data.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StudentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    status = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RemovedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -278,6 +300,37 @@ namespace Data.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Transaction",
+                schema: "CstUserMngt",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Price = table.Column<float>(type: "real", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Transaction", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Transaction_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalSchema: "CstUserMngt",
+                        principalTable: "Order",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transaction_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalSchema: "CstUserMngt",
+                        principalTable: "Students",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_ProductModelId",
                 schema: "CstUserMngt",
@@ -303,6 +356,12 @@ namespace Data.Migrations
                 column: "StudentModelId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Products_ProductTemplateModelId",
+                schema: "CstUserMngt",
+                table: "Products",
+                column: "ProductTemplateModelId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
                 schema: "CstUserMngt",
                 table: "RoleClaims",
@@ -322,6 +381,18 @@ namespace Data.Migrations
                 table: "Students",
                 column: "UserId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transaction_OrderId",
+                schema: "CstUserMngt",
+                table: "Transaction",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transaction_StudentId",
+                schema: "CstUserMngt",
+                table: "Transaction",
+                column: "StudentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserClaims_UserId",
@@ -364,11 +435,11 @@ namespace Data.Migrations
                 schema: "CstUserMngt");
 
             migrationBuilder.DropTable(
-                name: "Order",
+                name: "RoleClaims",
                 schema: "CstUserMngt");
 
             migrationBuilder.DropTable(
-                name: "RoleClaims",
+                name: "Transaction",
                 schema: "CstUserMngt");
 
             migrationBuilder.DropTable(
@@ -388,6 +459,14 @@ namespace Data.Migrations
                 schema: "CstUserMngt");
 
             migrationBuilder.DropTable(
+                name: "Order",
+                schema: "CstUserMngt");
+
+            migrationBuilder.DropTable(
+                name: "Roles",
+                schema: "CstUserMngt");
+
+            migrationBuilder.DropTable(
                 name: "Products",
                 schema: "CstUserMngt");
 
@@ -396,7 +475,7 @@ namespace Data.Migrations
                 schema: "CstUserMngt");
 
             migrationBuilder.DropTable(
-                name: "Roles",
+                name: "ProductsTemplate",
                 schema: "CstUserMngt");
 
             migrationBuilder.DropTable(

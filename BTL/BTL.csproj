@@ -43,6 +43,7 @@
     <_ContentIncludedByDefault Remove="Pages\Users\UsersRolePanel.cshtml" />
     <_ContentIncludedByDefault Remove="Views\Home\Cart.cshtml" />
     <_ContentIncludedByDefault Remove="Views\Home\Orders.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Home\Products.cshtml" />
     <_ContentIncludedByDefault Remove="Views\Home\Transaction.cshtml" />
   </ItemGroup>
 
@@ -60,6 +61,10 @@
 
   <ItemGroup>
     <UpToDateCheckInput Remove="Pages\Users\AddRole.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\Home\Products.cshtml" />
   </ItemGroup>
 
 </Project>

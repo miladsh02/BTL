@@ -15,5 +15,7 @@ namespace BTL.Models
         public int Quantity { get; set; }
         public DateTime CreatedDate { get; set;}
         public DateTime RemovedDate { get; set;}
+        public ICollection<TransactionModel>? Transaction { get; set; }
+
     }
 }

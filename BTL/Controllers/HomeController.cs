@@ -280,32 +280,26 @@ namespace BTL.Controllers
                 var product =
                     await _context.Products.FirstOrDefaultAsync(x => x.Id == cartItem.Product.Id);
 
+                cartItem.Cart.Status = CartStatus.AddedToOrder;
+                var productQuantity= product.Quantity;
+                var cartQuantity= cartItem.Cart.Quantity;
+                product.Quantity = productQuantity - cartQuantity;
+                _context.Products.Update(product);
+                _context.Carts.Update(cartItem.Cart);
+                price += cartItem.Product.Price * cartItem.Cart.Quantity;
+
                 await _context.Order.AddAsync(new OrderModel()
                 {
-                    CreatedDate = DateTime.Now,
-                    DeliveryDate = product.OrderDate,
                     Id = new Guid(),
-                    ProductId = product.Id,
+                    ProductId = cartItem.Product.Id,
                     Quantity = cartItem.Cart.Quantity,
-                    Status = OrderStatus.InTransaction,
-                    StudentId = studentId
+                    DeliveryDate = cartItem.Product.OrderDate,
+                    StudentId = studentId,
+                    Status = OrderStatus.InTransaction
                 });
-
-                var productQuantity= product.Quantity;
-                var cartQuantity= cartItem.Product.Quantity;
-                product.Quantity = productQuantity - cartQuantity;
-                _context.Update(product);
-                price += cartItem.Product.Price * cartItem.Cart.Quantity;
             }
 
-            await _context.Transaction.AddAsync(new TransactionModel()
-            {
-                CreateDate = DateTime.Now,
-                Id = new Guid(),
-                Status = StudentTransactionStatus.WhileTransaction,
-                StudentId = studentId,
-                Price = price
-            });
+
             #endregion
             
             await _context.SaveChangesAsync();
@@ -335,8 +329,9 @@ namespace BTL.Controllers
             if (transactionResult is true)
             {
                 var resultList = await _context.Order
-                    .Where(o => o.StudentId == studentId && o.Status == OrderStatus.InTransaction)
+                    .Where(o => o.StudentId == studentId &&o.Status==OrderStatus.InTransaction)
                     .ToListAsync();
+
                 foreach (var result in resultList)
                 {
                     result.Status = OrderStatus.InProcess;
@@ -359,7 +354,7 @@ namespace BTL.Controllers
                 {
                     var updatedProduct =
                         await _context.Products.FirstOrDefaultAsync(x=>x.Id==result.ProductId);
-                    updatedProduct!.Quantity += result.Quantity;
+                    updatedProduct.Quantity = updatedProduct.Quantity+result.Quantity;
                     _context.Update(updatedProduct);
                 }
 
@@ -367,7 +362,7 @@ namespace BTL.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction();
+            return RedirectToAction(nameof(HomeController.MyOrders));
         }
 
         public async Task<IActionResult> MyOrders()

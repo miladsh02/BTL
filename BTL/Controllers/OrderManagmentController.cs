@@ -46,9 +46,15 @@ namespace BTL.Controllers
             return View(results);
         }
 
-        public IActionResult EditOrdersToDelivered(Guid oderId)
+        public async Task<IActionResult> EditOrdersToDelivered(Guid orderId)
         {
-            return View();
+
+            var results =await _context.Order.FirstOrDefaultAsync(obj => obj.Id == orderId);
+            results.Status=OrderStatus.Delivered;
+            _context.Update(results);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(OrderManagmentController.Orders));
         }
 
     }

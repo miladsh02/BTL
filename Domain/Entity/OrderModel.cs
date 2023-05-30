@@ -24,7 +24,6 @@ namespace Data.Entity
         public Guid StudentId { get; set; } 
         public Guid ProductId { get; set; }
         public ProductModel? Product { get; set; }
-        public ICollection<TransactionModel>? Transaction { get; set; }
 
 
 

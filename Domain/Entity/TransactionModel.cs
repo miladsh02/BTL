@@ -13,8 +13,8 @@ namespace Domain.Entity
     public class TransactionModel
     {
         public Guid Id { get; set; }
-        public Guid OrderId { get; set; }
-        public OrderModel? Order { get; set; }
+        public Guid CartId { get; set; }
+        public CartModel? Cart { get; set; }
         public Guid StudentId { get; set; }
         public StudentModel? Student { get; set; }
 

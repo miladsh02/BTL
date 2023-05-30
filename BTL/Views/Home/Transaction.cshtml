@@ -10,30 +10,9 @@
     <h3>: مبلغ پرداختی شما ( تومان ) </h3>
     <h3>Model</h3>
 </center>
-<td>
-    <input type="radio" id="successRadio" name="transactionResult" value="true">
-    <label for="successRadio" class="btn btn-success">تراکنش موفق</label>
 
-    <input type="radio" id="failureRadio" name="transactionResult" value="false">
-    <label for="failureRadio" class="btn btn-danger">تراکنش ناموفق</label>
-</td>
 
-<form method="POST" asp-controller="Home" asp-action="AddToOrder">
-    <table>
-        <tr>
-            <td>
-                <input type="radio" id="successRadio" name="transactionResult" value="true">
-                <label for="successRadio" class="btn btn-success">تراکنش موفق</label>
-
-                <input type="radio" id="failureRadio" name="transactionResult" value="false">
-                <label for="failureRadio" class="btn btn-danger">تراکنش ناموفق</label>
-            </td>
-        </tr>
-        <!-- Other table rows and form fields -->
-        <tr>
-            <td>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </td>
-        </tr>
-    </table>
+<form method="post" type="hidden" asp-action="AddToOrder">
+    <button class="btn btn-danger" type="submit" name="transactionResult" value="false">تراکنش ناموفق</button>
+    <button class="btn btn-success" type="submit" name="transactionResult" value="true">تراکنش موفق</button>
 </form>

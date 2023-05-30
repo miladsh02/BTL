@@ -47,7 +47,7 @@ namespace BTL.Controllers
         {
             var results = await (from p in _context.Products
                 join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
-                where p.OrderDate >= DateTime.Today && p.OrderDate <= DateTime.Today.AddDays(1)
+                where p.OrderDate >= DateTime.Today && p.OrderDate <= DateTime.Today.AddDays(1)&&p.Quantity>0
                 select new ProductDto
                 {
                     ProductId = p.Id,

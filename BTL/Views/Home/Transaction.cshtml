@@ -1,8 +1,39 @@
-﻿@model dynamic
+﻿@model float
 
 @{
     ViewBag.Title = "title";
     Layout = "_Layout";
 }
+<center>
+    
+    <h2>سفارش شما در مرحله پرداخت قرار گرفت لطفا جهت تکمیل سفارش به درگاه پرداخت مراجعه فرمایید</h2>
+    <h3>: مبلغ پرداختی شما ( تومان ) </h3>
+    <h3>Model</h3>
+</center>
+<td>
+    <input type="radio" id="successRadio" name="transactionResult" value="true">
+    <label for="successRadio" class="btn btn-success">تراکنش موفق</label>
 
-<h2>title</h2>
+    <input type="radio" id="failureRadio" name="transactionResult" value="false">
+    <label for="failureRadio" class="btn btn-danger">تراکنش ناموفق</label>
+</td>
+
+<form method="POST" asp-controller="Home" asp-action="AddToOrder">
+    <table>
+        <tr>
+            <td>
+                <input type="radio" id="successRadio" name="transactionResult" value="true">
+                <label for="successRadio" class="btn btn-success">تراکنش موفق</label>
+
+                <input type="radio" id="failureRadio" name="transactionResult" value="false">
+                <label for="failureRadio" class="btn btn-danger">تراکنش ناموفق</label>
+            </td>
+        </tr>
+        <!-- Other table rows and form fields -->
+        <tr>
+            <td>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </td>
+        </tr>
+    </table>
+</form>

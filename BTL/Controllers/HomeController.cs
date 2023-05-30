@@ -18,6 +18,8 @@ using Microsoft.IdentityModel.Tokens;
 using LoginModel = BTL.Areas.Identity.Pages.Account.LoginModel;
 using Domain.Models.Composite;
 using System.Security.Principal;
+using NuGet.Packaging;
+using Microsoft.CodeAnalysis;
 
 namespace BTL.Controllers
 {
@@ -78,21 +80,50 @@ namespace BTL.Controllers
 
             #endregion
 
+            #region UserCartData
+
+            List<CartCompositeModel> compositeData =
+                await (from s in _context.Students
+                    join c in _context.Carts on s.Id equals c.StudentId
+                    join p in _context.Products on c.ProductId equals p.Id
+                    join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
+                    where (c.Status == CartStatus.Available) || (c.Status == CartStatus.ChangedTheValue) || (c.Status == CartStatus.Unavailable)
+                        && s.UserId == userId
+                       select new CartCompositeModel()
+                    {
+                        Cart = c,
+                        Product = p,
+                        ProductTemplate = pt
+                    }).ToListAsync();
+            var customerCart = new List<CartModel>();
+            customerCart.AddRange(compositeData.Select(model => model.Cart));
+            #endregion
+
             #region Add products to cart
 
             var cartList = new List<CartModel>();
 
             foreach (var product in products)
             {
-                cartList.Add(new CartModel()
+                if (customerCart.Exists(model => model.ProductId == product.ProductId))
                 {
-                    CreatedDate = DateTime.Now,
-                    Id = new Guid(),
-                    ProductId = product.ProductId,
-                    Quantity = 1,
-                    StudentId = student.Id,
-                    Status = CartStatus.Available
-                });
+                    var updatedCart = customerCart.Find(model => model.ProductId == product.ProductId);
+                    updatedCart.Quantity += 1;
+                    _context.Carts.Update(updatedCart);
+                }
+                else
+                {
+                    
+                    cartList.Add(new CartModel()
+                    {
+                        CreatedDate = DateTime.Now,
+                        Id = new Guid(),
+                        ProductId = product.ProductId,
+                        Quantity = 1,
+                        StudentId = student.Id,
+                        Status = CartStatus.Available
+                    });
+                }
                 
             }
 
@@ -103,6 +134,110 @@ namespace BTL.Controllers
 
             return RedirectToAction(nameof(HomeController.Cart));
         }
+        public async Task<IActionResult> Cart()
+        {
+            #region Validate User
+
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId.IsNullOrEmpty())
+            {
+                return Redirect(_loginUrl!);
+            }
+
+            #endregion
+
+            #region get user cart data from DB
+
+
+            DateTime yesterdayDateTime = DateTime.Now.AddDays(-1);
+
+            List<CartCompositeModel> results =
+                await (from s in _context.Students
+                       join c in _context.Carts on s.Id equals c.StudentId
+                       join p in _context.Products on c.ProductId equals p.Id
+                       join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
+                       where (c.Status == CartStatus.Available) || (c.Status == CartStatus.ChangedTheValue) 
+                              || (c.Status == CartStatus.Unavailable) && (s.UserId == userId )
+                       select new CartCompositeModel()
+                       {
+                           Cart = c,
+                           Product = p,
+                           ProductTemplate = pt
+                       }).ToListAsync();
+
+            #endregion
+
+            #region update the cart data
+
+            foreach (var result in results)
+            {
+
+
+                #region update status
+                //change Unavailable to RemovedFromCart
+                if (result.Cart.Status == CartStatus.Unavailable)
+                {
+                    result.Cart.Status = CartStatus.RemovedFromCart;
+                }
+
+                //check date
+                if (result.Product.OrderDate < yesterdayDateTime)
+                {
+                    result.Cart.Status = CartStatus.RemovedFromCart;
+                }
+
+                //change ChangedTheValue to Available
+                else if (result.Cart.Status == CartStatus.ChangedTheValue)
+                {
+                    result.Cart.Status = CartStatus.Available;
+                }
+                #endregion 
+
+                //find object
+                var dbSearch =
+                    await _context.Products.FirstOrDefaultAsync(x => x.Id == result.Product.Id);
+
+                //change status to Unavailable
+                if (dbSearch == null)
+                {
+                    result.Cart.Status = CartStatus.Unavailable;
+                }
+
+                //update value
+                else if (result.Cart.Quantity > dbSearch.Quantity)
+                {
+                    result.Cart.Quantity = dbSearch.Quantity;
+                    result.Cart.Status = CartStatus.ChangedTheValue;
+                }
+
+            }
+            _context.UpdateRange(results.Select(model => model.Cart));
+            await _context.SaveChangesAsync();
+
+            #endregion
+
+            #region mapping data
+
+            //map data to dto model
+            var dtoObject = new List<CartDtoModel>();
+            foreach (var result in results)
+            {
+                dtoObject.Add(new CartDtoModel()
+                {
+                    CartId = result.Cart.Id,
+                    ProductName = result.ProductTemplate.Name,
+                    ProductPrice = result.Product.Price,
+                    Quantity = result.Cart.Quantity,
+                    Status = result.Cart.Status
+
+                });
+            }
+
+            #endregion
+
+            return View(dtoObject);
+        }
+
         public async Task<IActionResult> Transaction()
         {
             #region check user
@@ -174,7 +309,7 @@ namespace BTL.Controllers
             #endregion
             
             await _context.SaveChangesAsync();
-            return View();
+            return View(price);
         }
 
         public async Task<IActionResult> AddToOrder(bool transactionResult)
@@ -235,122 +370,46 @@ namespace BTL.Controllers
             return RedirectToAction();
         }
 
-        public async Task<IActionResult> Cart()
+        public async Task<IActionResult> MyOrders()
         {
-            #region Validate User
+            #region Get user data
 
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId.IsNullOrEmpty())
             {
                 return Redirect(_loginUrl!);
             }
-            
-            #endregion
 
-            #region get user cart data from DB
-            
-            List<CartCompositeModel> results =
-                await (from s in _context.Students
-                    join c in _context.Carts on s.Id equals c.StudentId
-                    join p in _context.Products on c.ProductId equals p.Id
-                    join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
-                    where (c.Status == CartStatus.Available) || (c.Status == CartStatus.Unavailable)
-                    select new CartCompositeModel()
-                    {
-                        Cart = c,
-                        Product = p,
-                        ProductTemplate=pt
-                    }).ToListAsync();
-            
-            #endregion
-
-            #region update the cart data
-            
-            foreach (var result in results)
-            {
-                #region update status
-                //change Unavailable to RemovedFromCart
-                if (result.Cart.Status == CartStatus.Unavailable)
-                {
-                    result.Cart.Status = CartStatus.RemovedFromCart;
-                    _context.Update(result);
-                }
-                //change ChangedTheValue to Available
-                else if (result.Cart.Status == CartStatus.ChangedTheValue)
-                {
-                    result.Cart.Status = CartStatus.Available;
-                    _context.Update(result);
-                }
-                #endregion 
-
-                //find object
-                var dbSearch =
-                    await _context.Products.FirstOrDefaultAsync(x => x.Id == result.Product.Id);
-
-                //change status to Unavailable
-                if (dbSearch == null)
-                {
-                    result.Cart.Status = CartStatus.Unavailable;
-                    _context.Update(result);
-                }
-
-                //update value
-                else if (result.Cart.Quantity > dbSearch.Quantity)
-                {
-                    result.Cart.Quantity = dbSearch.Quantity;
-                    result.Cart.Status = CartStatus.ChangedTheValue;
-                }
-
-            }
-            
-            await _context.SaveChangesAsync();
+            var studentId = await
+            (
+                from s in _context.Students
+                where s.UserId == userId
+                select s.Id
+            ).FirstOrDefaultAsync();
 
             #endregion
 
-            #region mapping data
-
-            //map data to dto model
-            var dtoObject = new List<CartDtoModel>();
-            foreach (var result in results)
-            {
-                dtoObject.Add(new CartDtoModel()
-                {
-                    CartId = result.Cart.Id,
-                    ProductName = result.ProductTemplate.Name,
-                    ProductPrice = result.Product.Price,
-                    Quantity = result.Cart.Quantity,
-                    Status = result.Cart.Status
-
-                });
-            }
-
-            #endregion
-
-            return View(dtoObject);
-        }
-
-        public async Task<IActionResult> Orders()
-        {
             var results = await (from o in _context.Order
                 join p in _context.Products on o.ProductId equals p.Id
                 join pt in _context.ProductsTemplate on p.ProductTemplateId equals pt.Id
                 join s in _context.Students on o.StudentId equals s.Id
-                where (o.DeliveryDate >= DateTime.Today )&&
-                      (o.DeliveryDate <= DateTime.Today.AddDays(1))&&
-                      (o.Status==OrderStatus.InProcess)
-                select new OrderDtoModel()
-                {
-                    OrderId = o.Id,
-                    Price = p.Price,
-                    OrderDeliveryDate = o.DeliveryDate,
-                    ProductName = pt.Name,
-                    OrderQuantity = o.Quantity,
-                    OrderStatus = o.Status,
-                    StudentFirstName = s.FirstName,
-                    StudentLastName = s.LastName,
-                    StudentPhoneNumber =s.PhoneNumber,
-                    StudentUniversityId = s.UniversityId
-                }).ToListAsync();
+                where (o.DeliveryDate >= DateTime.Today) &&
+                      (o.DeliveryDate <= DateTime.Today.AddDays(1)) &&
+                      (o.Status == OrderStatus.InProcess) &&
+                      (s.UserId == userId)
+                                 select new OrderDtoModel()
+                                 {
+                                     OrderId = o.Id,
+                                     ProductName = pt.Name,
+                                     OrderQuantity = o.Quantity,
+                                     Price = p.Price,
+                                     StudentUniversityId = s.UniversityId,
+                                     StudentLastName = s.LastName,
+                                     StudentFirstName = s.FirstName,
+                                     StudentPhoneNumber = s.PhoneNumber,
+                                     OrderDeliveryDate = o.DeliveryDate,
+                                     OrderStatus = o.Status
+                                 }).ToListAsync();
 
             return View(results);
         }

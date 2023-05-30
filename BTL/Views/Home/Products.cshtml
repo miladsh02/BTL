@@ -5,19 +5,36 @@
     Layout = "_Layout";
 }
 
-<h2>title</h2>
+<div style="text-align: center;"><b>لیست غذا های قابل ارائه در روز های آتی</b></div>
 
-@foreach (var product in Model)
-{
-    <div>
-        <h4>@product.ProductTemplateName</h4>
-        <p>@product.ProductTemplateDescription</p>
-        <p>Price: @product.ProductPrice</p>
-        <p>Quantity: @product.ProductQuantity</p>
-        <p>Order Date: @product.ProductOrderDate</p>
-        <form asp-action="AddToCart" method="post">
-            <input type="hidden" name="products.Index" value="@product.ProductId" />
-            <input type="submit" value="Add to Cart" />
-        </form>
-    </div>
-}
+<table class="table">
+    <thead>
+    <tr>
+        <th>نام غذا</th>
+        <th>توضیحات</th>
+        <th>قیمت (تومان)</th>
+        <th>تعداد</th>
+        <th>روز سفارش</th>
+        <th>سفارش</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var product in Model)
+    {
+        <tr>
+            <td>@product.ProductTemplateName</td>
+            <td>@product.ProductTemplateDescription</td>
+            <td>@product.ProductPrice</td>
+            <td>@product.ProductQuantity</td>
+            <td>@product.ProductOrderDate</td>
+            <td>
+                <form method="post" asp-controller="Home" asp-action="AddToCart">
+                    <input type="hidden" name="products[0].ProductId" value="@product.ProductId" />
+                    <input type="hidden" name="products[0].ProductName" value="@product.ProductTemplateName" />
+                    <button type="submit" class="btn btn-primary">افزودن به سبد</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

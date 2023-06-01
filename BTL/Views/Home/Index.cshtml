@@ -1,4 +1,38 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "title";
+    Layout = null; // Setting Layout to null disables the layout for this page
 }
-<center>first page</center>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewBag.Title</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column; /* Set the flex-direction to column */
+        }
+
+        .logo-image {
+            width: 200px; /* Adjust the width as needed */
+            height: auto; /* The height will be automatically adjusted according to the aspect ratio of the image */
+            margin-bottom: 20px; /* Add a bottom margin to create space between the image and the button */
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <!-- Include any other required stylesheets -->
+</head>
+<body>
+<img src="https://www.uniref.ir/media/lo/1221.webp" alt="Logo" class="logo-image">
+<br> <!-- Add a line break to create space between the image and the button -->
+    <a asp-area="Identity" asp-page="/Account/LogIn" type="button" class="btn btn-outline-primary btn-lg">ورود به صفحه سفارش</a>
+
+<!-- Include any other required scripts -->
+</body>
+</html>

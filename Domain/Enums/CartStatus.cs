@@ -6,6 +6,7 @@
         Available=1,
         Unavailable=2,
         AddedToOrder=3,
-        RemovedFromCart=4
+        ChangedTheValue=4,
+        RemovedFromCart=5
     }
 }

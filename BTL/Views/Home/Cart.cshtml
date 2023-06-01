@@ -1,0 +1,80 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using BTL.Enums
+@model List<Domain.DtoModels.CartDtoModel>
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+@if (Model.Count <= 0)
+{
+    <div style="text-align: center;"><b>درحال حاضر سبد خرید شما خالی است</b></div>
+
+}
+@if ((Model.Count > 0))
+{
+    <div style="text-align: center;"><b>سبد خرید شما</b></div>
+<table class="table">
+    <thead>
+    <tr>
+        <th>نام غذا</th>
+        <th>تعداد</th>
+        <th>قیمت (تومان)</th>
+        <th>وضعیت</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{ float totalPrice = 0; }
+    @foreach (var cartItem in Model)
+    {
+        <tr>
+            <td>@cartItem.ProductName</td>
+            <td>@cartItem.Quantity</td>
+            <td>@cartItem.ProductPrice</td>
+
+            @if (cartItem.Status == CartStatus.Available)
+            {
+                <td>
+                    <button type="button" class="btn btn-success">@cartItem.Status</button>
+                </td>
+            }
+            @if (cartItem.Status == CartStatus.ChangedTheValue)
+            {
+                <td>
+                    <button type="button" class="btn btn-warning">@cartItem.Status</button>
+                </td>
+            }
+            @if (cartItem.Status == CartStatus.Unavailable)
+            {
+                <td>
+                    <button type="button" class="btn btn-danger">@cartItem.Status</button>
+                </td>
+            }
+            <td>
+                <form method="post" asp-controller="Home" asp-action="AddToCart">
+                    <input type="hidden" name="carts[0].CartId" value="@cartItem.CartId"/>
+                    <input type="hidden" name="carts[0].ProductName" value="@cartItem.ProductName"/>
+                    <input type="hidden" name="carts[0].Quantity" value="@cartItem.Quantity"/>
+                    <input type="hidden" name="carts[0].ProductPrice" value="@cartItem.ProductPrice"/>
+                </form>
+            </td>
+        </tr>
+
+        totalPrice+= cartItem.ProductPrice*cartItem.Quantity;
+        
+    }
+    </tbody>
+</table>
+    <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <center class="card-title">: جمع کل( تومان ) </center>
+                <center class="card-text">  @totalPrice </center>
+                <center>
+                    <a type="button"asp-action="Transaction"asp-controller="Home" class="btn btn-primary" id="liveAlertBtn">خرید نهایی</a>
+                </center>
+            </div>
+        </div>
+    </div>
+
+}

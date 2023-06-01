@@ -1,0 +1,40 @@
+﻿@model List<Domain.DtoModels.ProductDto>
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<div style="text-align: center;"><b>لیست غذا های قابل ارائه در روز های آتی</b></div>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>نام غذا</th>
+        <th>توضیحات</th>
+        <th>قیمت (تومان)</th>
+        <th>تعداد</th>
+        <th>روز سفارش</th>
+        <th>سفارش</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var product in Model)
+    {
+        <tr>
+            <td>@product.ProductTemplateName</td>
+            <td>@product.ProductTemplateDescription</td>
+            <td>@product.ProductPrice</td>
+            <td>@product.ProductQuantity</td>
+            <td>@product.ProductOrderDate</td>
+            <td>
+                <form method="post" asp-controller="Home" asp-action="AddToCart">
+                    <input type="hidden" name="products[0].ProductId" value="@product.ProductId" />
+                    <input type="hidden" name="products[0].ProductName" value="@product.ProductTemplateName" />
+                    <button type="submit" class="btn btn-primary">افزودن به سبد</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

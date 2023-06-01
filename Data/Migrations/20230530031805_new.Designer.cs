@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230502071144_init")]
-    partial class init
+    [Migration("20230530031805_new")]
+    partial class @new
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,14 +47,14 @@ namespace Data.Migrations
                     b.Property<DateTime>("RemovedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("StudentModelId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("status")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -71,21 +71,21 @@ namespace Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<float>("Price")
                         .HasColumnType("real");
+
+                    b.Property<Guid>("ProductTemplateId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductTemplateId");
 
                     b.ToTable("Products", "CstUserMngt");
                 });
@@ -103,6 +103,10 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NationalCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
@@ -226,6 +230,55 @@ namespace Data.Migrations
                     b.HasIndex("StudentModelId");
 
                     b.ToTable("Order", "CstUserMngt");
+                });
+
+            modelBuilder.Entity("Data.Entity.ProductTemplateModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductsTemplate", "CstUserMngt");
+                });
+
+            modelBuilder.Entity("Domain.Entity.TransactionModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CartId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("real");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("Transaction", "CstUserMngt");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -372,6 +425,17 @@ namespace Data.Migrations
                         .HasForeignKey("StudentModelId");
                 });
 
+            modelBuilder.Entity("BTL.Models.ProductModel", b =>
+                {
+                    b.HasOne("Data.Entity.ProductTemplateModel", "ProductTemplate")
+                        .WithMany("Products")
+                        .HasForeignKey("ProductTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductTemplate");
+                });
+
             modelBuilder.Entity("BTL.Models.StudentModel", b =>
                 {
                     b.HasOne("Data.Entity.CustomIdentityUserModel", "CustomIdentityUserModel")
@@ -396,6 +460,25 @@ namespace Data.Migrations
                         .HasForeignKey("StudentModelId");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Domain.Entity.TransactionModel", b =>
+                {
+                    b.HasOne("BTL.Models.CartModel", "Cart")
+                        .WithMany("Transaction")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BTL.Models.StudentModel", "Student")
+                        .WithMany("Transactions")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -449,6 +532,11 @@ namespace Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("BTL.Models.CartModel", b =>
+                {
+                    b.Navigation("Transaction");
+                });
+
             modelBuilder.Entity("BTL.Models.ProductModel", b =>
                 {
                     b.Navigation("Carts");
@@ -461,12 +549,19 @@ namespace Data.Migrations
                     b.Navigation("Carts");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("Data.Entity.CustomIdentityUserModel", b =>
                 {
                     b.Navigation("Student")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Data.Entity.ProductTemplateModel", b =>
+                {
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

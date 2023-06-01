@@ -8,13 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using BTL.Models;
 using Domain.Enums;
+using Domain.Entity;
 
 namespace Data.Entity
 {
     public class OrderModel
     {
+        [Key]
         public Guid Id { get; set; }
-
         public int Quantity { get; set; }
         public DateTime DeliveryDate { get; set; }
         public OrderStatus Status { get; set; }
@@ -23,6 +24,7 @@ namespace Data.Entity
         public Guid StudentId { get; set; } 
         public Guid ProductId { get; set; }
         public ProductModel? Product { get; set; }
+
 
 
 

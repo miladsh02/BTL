@@ -1,0 +1,71 @@
+﻿@using Domain.Enums
+@model System.Collections.Generic.List<Domain.DtoModels.OrderDtoModel>
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+
+@if (Model.Count <= 0)
+{
+    <div style="text-align: center;"><b>درحال حاضر لیست سفارشات شما خالی است</b></div>
+}
+
+@if ((Model.Count > 0))
+{
+    <div style="text-align: center;"><b>سفارشات شما</b></div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>نام غذا</th>
+                <th>تعداد</th>
+                <th>قیمت (تومان)</th>
+                <th>تاریخ تحویل</th>
+                <th>وضعیت</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@item.OrderQuantity</td>
+                    <td>@item.Price</td>
+                    <td>@item.OrderDeliveryDate</td>
+
+                    @if (item.OrderStatus == OrderStatus.InProcess)
+                    {
+                        <td>
+                            <button type="button" class="btn btn-primary">درحال آماده سازی</button>
+                        </td>
+                    }                    
+                    @if (item.OrderStatus == OrderStatus.InTransaction)
+                    {
+                        <td>
+                            <button type="button" class="btn btn-info">درحال پرداخت</button>
+                        </td>
+                    }                    
+                    @if (item.OrderStatus == OrderStatus.TransactionFailed)
+                    {
+                        <td>
+                            <button type="button" class="btn btn-danger">تراکنش ناموفق</button>
+                        </td>
+                    }                    
+                    @if (item.OrderStatus == OrderStatus.Cancelled)
+                    {
+                        <td>
+                            <button type="button" class="btn btn-danger">سفارش لغو شده</button>
+                        </td>
+                    }                    
+                    @if (item.OrderStatus == OrderStatus.Delivered)
+                    {
+                        <td>
+                            <button type="button" class="btn btn-success">تحویل داده شده</button>
+                        </td>
+                    }                    
+                </tr>
+            }
+        </tbody>
+    </table>
+}

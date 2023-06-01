@@ -1,0 +1,18 @@
+﻿@model float
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+<center>
+    
+    <h2>سفارش شما در مرحله پرداخت قرار گرفت لطفا جهت تکمیل سفارش به درگاه پرداخت مراجعه فرمایید</h2>
+    <h3>: مبلغ پرداختی شما ( تومان ) </h3>
+    <h3>Model</h3>
+</center>
+
+
+<form method="post" type="hidden" asp-action="AddToOrder">
+    <button class="btn btn-danger" type="submit" name="transactionResult" value="false">تراکنش ناموفق</button>
+    <button class="btn btn-success" type="submit" name="transactionResult" value="true">تراکنش موفق</button>
+</form>

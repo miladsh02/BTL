@@ -4,6 +4,7 @@ using BTL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230523013115_init")]
+    partial class init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,12 +80,15 @@ namespace Data.Migrations
                     b.Property<Guid>("ProductTemplateId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ProductTemplateModelId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductTemplateId");
+                    b.HasIndex("ProductTemplateModelId");
 
                     b.ToTable("Products", "CstUserMngt");
                 });
@@ -254,11 +260,11 @@ namespace Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CartId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<float>("Price")
                         .HasColumnType("real");
@@ -271,7 +277,7 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CartId");
+                    b.HasIndex("OrderId");
 
                     b.HasIndex("StudentId");
 
@@ -424,13 +430,9 @@ namespace Data.Migrations
 
             modelBuilder.Entity("BTL.Models.ProductModel", b =>
                 {
-                    b.HasOne("Data.Entity.ProductTemplateModel", "ProductTemplate")
-                        .WithMany("Products")
-                        .HasForeignKey("ProductTemplateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProductTemplate");
+                    b.HasOne("Data.Entity.ProductTemplateModel", null)
+                        .WithMany("Product")
+                        .HasForeignKey("ProductTemplateModelId");
                 });
 
             modelBuilder.Entity("BTL.Models.StudentModel", b =>
@@ -461,9 +463,9 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Entity.TransactionModel", b =>
                 {
-                    b.HasOne("BTL.Models.CartModel", "Cart")
+                    b.HasOne("Data.Entity.OrderModel", "Order")
                         .WithMany("Transaction")
-                        .HasForeignKey("CartId")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -473,7 +475,7 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Cart");
+                    b.Navigation("Order");
 
                     b.Navigation("Student");
                 });
@@ -529,11 +531,6 @@ namespace Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("BTL.Models.CartModel", b =>
-                {
-                    b.Navigation("Transaction");
-                });
-
             modelBuilder.Entity("BTL.Models.ProductModel", b =>
                 {
                     b.Navigation("Carts");
@@ -556,9 +553,14 @@ namespace Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Data.Entity.OrderModel", b =>
+                {
+                    b.Navigation("Transaction");
+                });
+
             modelBuilder.Entity("Data.Entity.ProductTemplateModel", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("Product");
                 });
 #pragma warning restore 612, 618
         }
